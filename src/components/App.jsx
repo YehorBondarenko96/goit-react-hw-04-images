@@ -18,7 +18,7 @@ export const App = () => {
     const [isModal, setIsModal] = useState(false);
     const [bigImg, setBigImg] = useState(null); 
     const [scrollPositionY, setScrollPositionY] = useState(0);
-    const [prevState, setPrevState] = useState({results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY});
+    const [prevState, setPrevState] = useState({results, scrollPositionY, intV, page});
     
 
   const inputValue = (evt) => {
@@ -55,7 +55,7 @@ export const App = () => {
   };
 
   useEffect(() => {
-    setPrevState({results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY});
+    setPrevState({results, scrollPositionY, intV, page});
 
     const searchNewImg = async () => {
       if(intV.length > 0 && (intV !== prevState.intV || page !== prevState.page)){
@@ -66,7 +66,7 @@ export const App = () => {
         if(intV === prevState.intV){
           setResults(
                 [...prevState.results, ...messyResults.map(messyResult => ({
-                id: messyResult.id, 
+                id: prevState.results.some(child => child.id === messyResult.id) ? messyResult.id + Math.floor(Math.random() * 1000000) : messyResult.id, 
                 webformatURL: messyResult.webformatURL, 
                 largeImageURL: messyResult.largeImageURL
               }))])
@@ -93,7 +93,7 @@ export const App = () => {
     if(scrollPositionY > 0){
           window.scroll(0, scrollPositionY + 628)
         };
-  }, [results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY, prevState.intV, prevState.page, prevState.results]);
+  }, [results, intV, page, prevState.intV, scrollPositionY, prevState.page, prevState.results]);
 
     return (
       <div className={css.App}>
