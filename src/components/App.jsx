@@ -93,44 +93,7 @@ export const App = () => {
     if(scrollPositionY > 0){
           window.scroll(0, scrollPositionY + 628)
         };
-  }, [results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY])
-
-  // async componentDidUpdate(prevProps, prevState){
-  //   if(this.state.intV.length > 0 && (this.state.intV !== prevState.intV || this.state.page !== prevState.page)){
-  //     this.setState({ isLoading: true });
-
-  //   try {
-  //     const messyResults = await fetchForSearch(this.state.intV, this.state.page);
-  //     if(this.state.intV === prevState.intV){
-  //       this.setState((prevState) => ({
-  //         results: [...prevState.results, ...messyResults.map(messyResult => ({
-  //           id: messyResult.id, 
-  //           webformatURL: messyResult.webformatURL, 
-  //           largeImageURL: messyResult.largeImageURL
-  //         }))]
-  //       }));
-  //     } else{
-  //       this.setState((state) => ({
-  //         results: messyResults.map(messyResult => ({
-  //           id: messyResult.id, 
-  //           webformatURL: messyResult.webformatURL, 
-  //           largeImageURL: messyResult.largeImageURL
-  //         }))
-  //       }));
-  //     }
-  //   } catch (error) {
-  //     this.setState({ error });
-  //   } finally {
-  //     this.setState({ isLoading: false });
-  //   }
-  //   } else if(prevState.results.length > 0 && this.state.intV.length === 0) {
-  //     this.setState({ results: [] })
-  //   }
-
-  //   if(this.state.scrollPositionY > 0){
-  //     window.scroll(0, this.state.scrollPositionY + 628)
-  //   };
-  // };
+  }, [results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY, prevState.intV, prevState.page, prevState.results]);
 
     return (
       <div className={css.App}>
