@@ -1,113 +1,145 @@
 import css from './Styles.module.css';
 import { Bars } from 'react-loader-spinner';
-import { Component } from 'react';
 import fetchForSearch from '../services/api';
 import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGellery } from './ImageGallery/ImageGallery';
 import { LoadMore } from './LoadMore/LoadMore';
 import { Modal } from './Modal/Modal';
 import { Error } from './Error/Error';
+import { useState, useEffect } from 'react';
 
-export class App extends Component {
-  state = {
-    results: [],
-    isLoading: false,
-    error: null,
-    intV: '',
-    page: 1,
-    isModal: false,
-    bigImg: null,
-    scrollPositionY: 0
-  };
+export const App = () => {
+  
+    const [results, setResults] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [intV, setIntV] = useState('');
+    const [page, setPage] = useState(1);
+    const [isModal, setIsModal] = useState(false);
+    const [bigImg, setBigImg] = useState(null); 
+    const [scrollPositionY, setScrollPositionY] = useState(0);
+    const [prevState, setPrevState] = useState({results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY});
+    
 
-  inputValue = (evt) => {
+  const inputValue = (evt) => {
     evt.preventDefault();
     const intV = evt.currentTarget.elements.search.value;
-    this.setState({
-      intV,
-      page: 1,
-      scrollPositionY: 0
-    })
+    setIntV(intV);
+    setPage(1);
+    setScrollPositionY(0)
   };
 
-  forLoadMore = () => {
+  const forLoadMore = () => {
     const scrollPositionY = window.scrollY;
-    this.setState((prevState) => ({
-      page: prevState.page + 1,
-      scrollPositionY: scrollPositionY
-    }))
+    setPage((prevPage) => prevPage + 1);
+    setScrollPositionY(scrollPositionY)
   };
 
-  openModal = (id) => {
-    document.addEventListener('keydown', this.closeForEsc);
-    const bigImg = this.state.results.find(result => result.id === id);
-    this.setState({
-      isModal: true, 
-      bigImg: bigImg
-    })
+  const openModal = (id) => {
+    document.addEventListener('keydown', closeForEsc);
+    const bigImg = results.find(result => result.id === id);
+    setIsModal(true);
+    setBigImg(bigImg)
   };
 
-  closeModal = () => {
-    document.removeEventListener('keydown', this.closeForEsc);
-    this.setState({
-      isModal: false,
-      bigImg: null
-    })
+  const closeModal = () => {
+    document.removeEventListener('keydown', closeForEsc);
+    setIsModal(false);
+    setBigImg(null)
   };
 
-  closeForEsc = (evt) => {
+  const closeForEsc = (evt) => {
     if (evt.key === 'Escape') {
-      this.closeModal();
+      closeModal();
     }
   };
 
-  async componentDidUpdate(prevProps, prevState){
-    if(this.state.intV.length > 0 && (this.state.intV !== prevState.intV || this.state.page !== prevState.page)){
-      this.setState({ isLoading: true });
+  useEffect(() => {
+    setPrevState({results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY});
 
-    try {
-      const messyResults = await fetchForSearch(this.state.intV, this.state.page);
-      if(this.state.intV === prevState.intV){
-        this.setState((prevState) => ({
-          results: [...prevState.results, ...messyResults.map(messyResult => ({
-            id: messyResult.id, 
-            webformatURL: messyResult.webformatURL, 
-            largeImageURL: messyResult.largeImageURL
-          }))]
-        }));
-      } else{
-        this.setState((state) => ({
-          results: messyResults.map(messyResult => ({
-            id: messyResult.id, 
-            webformatURL: messyResult.webformatURL, 
-            largeImageURL: messyResult.largeImageURL
-          }))
-        }));
+    const searchNewImg = async () => {
+      if(intV.length > 0 && (intV !== prevState.intV || page !== prevState.page)){
+        setIsLoading(true);
+  
+      try {
+        const messyResults = await fetchForSearch(intV, page);
+        if(intV === prevState.intV){
+          setResults(
+                [...prevState.results, ...messyResults.map(messyResult => ({
+                id: messyResult.id, 
+                webformatURL: messyResult.webformatURL, 
+                largeImageURL: messyResult.largeImageURL
+              }))])
+        } else{
+          setResults(
+                messyResults.map(messyResult => ({
+                id: messyResult.id, 
+                webformatURL: messyResult.webformatURL, 
+                largeImageURL: messyResult.largeImageURL
+              }))
+              )
+        }
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
+      } else if(prevState.results.length > 0 && intV.length === 0) {
+        setResults([])
+      }
     }
-    } else if(prevState.results.length > 0 && this.state.intV.length === 0) {
-      this.setState({ results: [] })
-    }
+    
+    searchNewImg();
+    if(scrollPositionY > 0){
+          window.scroll(0, scrollPositionY + 628)
+        };
+  }, [results, isLoading, error, intV, page, isModal, bigImg, scrollPositionY])
 
-    if(this.state.scrollPositionY > 0){
-      window.scroll(0, this.state.scrollPositionY + 628)
-    };
-  };
+  // async componentDidUpdate(prevProps, prevState){
+  //   if(this.state.intV.length > 0 && (this.state.intV !== prevState.intV || this.state.page !== prevState.page)){
+  //     this.setState({ isLoading: true });
 
-  render () {
-    const {results, isLoading, isModal, bigImg, error} = this.state;
+  //   try {
+  //     const messyResults = await fetchForSearch(this.state.intV, this.state.page);
+  //     if(this.state.intV === prevState.intV){
+  //       this.setState((prevState) => ({
+  //         results: [...prevState.results, ...messyResults.map(messyResult => ({
+  //           id: messyResult.id, 
+  //           webformatURL: messyResult.webformatURL, 
+  //           largeImageURL: messyResult.largeImageURL
+  //         }))]
+  //       }));
+  //     } else{
+  //       this.setState((state) => ({
+  //         results: messyResults.map(messyResult => ({
+  //           id: messyResult.id, 
+  //           webformatURL: messyResult.webformatURL, 
+  //           largeImageURL: messyResult.largeImageURL
+  //         }))
+  //       }));
+  //     }
+  //   } catch (error) {
+  //     this.setState({ error });
+  //   } finally {
+  //     this.setState({ isLoading: false });
+  //   }
+  //   } else if(prevState.results.length > 0 && this.state.intV.length === 0) {
+  //     this.setState({ results: [] })
+  //   }
+
+  //   if(this.state.scrollPositionY > 0){
+  //     window.scroll(0, this.state.scrollPositionY + 628)
+  //   };
+  // };
+
     return (
       <div className={css.App}>
         {error ? (
           <Error/>
         ) : (
           <>
-          {isModal && <Modal bigImg={bigImg} closeModal={this.closeModal}/>}
-          <Searchbar onSubmit={this.inputValue}/>
+          {isModal && <Modal bigImg={bigImg} closeModal={closeModal}/>}
+          <Searchbar onSubmit={inputValue}/>
         {isLoading ? (
         <div className={css.spinerWithoutResults}>
         <Bars
@@ -123,8 +155,8 @@ export class App extends Component {
         ) : (
           results.length > 0 &&
           <>
-          <ImageGellery results={results} openModal={this.openModal}/>
-          <LoadMore onClick={this.forLoadMore}/>
+          <ImageGellery results={results} openModal={openModal}/>
+          <LoadMore onClick={forLoadMore}/>
           </>
           )}
           </>
@@ -132,5 +164,4 @@ export class App extends Component {
       }
       </div>
     );
-  }
 };
